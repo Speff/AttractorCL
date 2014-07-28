@@ -10,3 +10,4 @@ void boilerplateCode();
 void compileKernel();
 void setMemMappings();
 void checkErrorCode(char*, int);
+void readBuffer();

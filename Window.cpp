@@ -77,9 +77,9 @@ int main(int argc, char **argv){
 		glEnableVertexAttribArray(1);
 
 		glBindBuffer(GL_ARRAY_BUFFER, bufParticle_GL);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (void*)sizeof(cl_uint));
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), (void*)(sizeof(cl_uint)+3*sizeof(cl_float)));
 		glBindBuffer(GL_ARRAY_BUFFER, bufParticle_GL);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (void*)(sizeof(cl_uint) + 2*sizeof(cl_float3) + sizeof(cl_float)));
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), (void*)(sizeof(cl_uint) + 2*sizeof(cl_float4) + 3*sizeof(cl_float)));
 
 		glDrawArrays(GL_POINTS, 0, NUM_PARTICLES);
 

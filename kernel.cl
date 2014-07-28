@@ -12,19 +12,27 @@
 #else
 #endif
 
-typedef struct ParticleContainer{
+typedef struct{
 	uint alive;
-	float3 position;
-	float3 velocity;
 	float velocityDamping;
-	float3 color;
 	float lifetime;
 	float decayPerIteration;
-} Particle;
+	float4 position;
+	float4 velocity;
+	float4 color;
+} Particle;  
 
 __kernel void updateParticle(__global Particle* particleArray, 
-							 const float AR){
-
+							 const float AR,
+							 __global float4* Test){
+	
 	int gid = get_global_id(0); 
-	particleArray[gid].position.x += 1.0f;
+
+	if(particleArray[gid].alive == 1){
+		particleArray[gid].position += particleArray[gid].velocity;
+		particleArray[gid].velocity = particleArray[gid].velocity * particleArray[gid].velocityDamping;
+		particleArray[gid].color = particleArray[gid].color * particleArray[gid].lifetime;
+		particleArray[gid].lifetime -= particleArray[gid].decayPerIteration;
+		if(particleArray[gid].lifetime < 0) particleArray[gid].alive = 0;
+	}
 }

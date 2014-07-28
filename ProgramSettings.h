@@ -1,7 +1,7 @@
 #define		PSETTINGS		TRUE
 #define		WIDTH			400
 #define		HEIGHT			300
-#define		PATH			""
+#define		PATH			"C:/Users/Sahil/Documents/GitHub/AttractorCL/"
 #define		VERBOSE			true
 #define		NUM_PARTICLES	64
 
@@ -23,14 +23,14 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 
-struct Particle{
+typedef struct{
 	cl_uint alive;
-	cl_float3 position;
-	cl_float3 velocity;
 	cl_float velocityDamping;
-	cl_float3 color;
 	cl_float lifetime;
 	cl_float decayPerIteration;
-};
+	cl_float4 position;
+	cl_float4 velocity;
+	cl_float4 color;
+} Particle;
 
 char* readFile(const char*);

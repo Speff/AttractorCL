@@ -6,8 +6,11 @@ cl_device_id *devices;
 cl_program programCL;
 cl_context context;
 cl_command_queue cmdQueue;
-cl_kernel kernel;
+cl_kernel updateKernel;
 cl_mem bufParticle_CL;
+cl_mem bufTest_CL;
+
+cl_float4 testVar[5];
 
 extern GLuint bufParticle_GL;
 
@@ -19,11 +22,28 @@ void initCL(){
 
 void killCL(){
 	// Free OpenCL resources
-	clReleaseKernel(kernel);
+	clReleaseKernel(updateKernel);
 	clReleaseProgram(programCL);
 	clReleaseCommandQueue(cmdQueue);
 	clReleaseContext(context);
 	free(devices);
+}
+
+void readBuffer(){
+	cl_int status;
+
+	// Read the device output buffer to the host output array
+	status = clEnqueueReadBuffer(cmdQueue, bufTest_CL, CL_TRUE, 0, 5 * sizeof(cl_float4), testVar, 0, NULL, NULL);
+	printf("------------------------\n");
+	printf("%2.3f, %2.3f, %2.3f, %2.3f, read\n", testVar[0].s[0], testVar[0].s[1], testVar[0].s[2], testVar[0].s[3]);
+	printf("%2.3f, %2.3f, %2.3f, %2.3f, read\n", testVar[1].s[0], testVar[1].s[1], testVar[1].s[2], testVar[1].s[3]);
+	printf("%2.3f, %2.3f, %2.3f, %2.3f, read\n", testVar[2].s[0], testVar[2].s[1], testVar[2].s[2], testVar[2].s[3]);
+	printf("------------------------\n");
+	checkErrorCode("Reading bufTestVal...\t", status);
+	clFinish(cmdQueue);
+
+	//printf("Particle: %i\tLocation:\t%f, %f\n\t\t\t\t%f, %f\n", (int) kernelTestVal[0].s[1], kernelTestVal[1].s[0], kernelTestVal[1].s[1], kernelTestVal[2].s[0], kernelTestVal[2].s[1]);
+	//
 }
 
 void runSim(){
@@ -32,14 +52,21 @@ void runSim(){
 	size_t globalWorkSize[1];
 	cl_int status;
 
+	//printf("Size of Int: %i\n", sizeof(cl_int));
+	//printf("Size of Float: %i\n", sizeof(cl_float));
+	//printf("Size of Float4: %i\n", sizeof(cl_float4));
+	//printf("Size of Particle: %i\n", sizeof(Particle));
+
 	globalWorkSize[0] = NUM_PARTICLES;
 
 	status = clEnqueueAcquireGLObjects(cmdQueue, 1, &bufParticle_CL, NULL, NULL, NULL);
 	clFinish(cmdQueue);
 
 	// Execute the kernel
-	status = clEnqueueNDRangeKernel(cmdQueue, kernel, 1, NULL, globalWorkSize, NULL, 0, NULL, NULL);
+	status = clEnqueueNDRangeKernel(cmdQueue, updateKernel, 1, NULL, globalWorkSize, NULL, 0, NULL, NULL);
 	//checkErrorCode("Running Sim...\t\t", status);
+	clFinish(cmdQueue);
+	//readBuffer();
 
 	status = clEnqueueReleaseGLObjects(cmdQueue, 1, &bufParticle_CL, NULL, NULL, NULL);
 }
@@ -53,9 +80,13 @@ void setMemMappings(){
 	bufParticle_CL = clCreateFromGLBuffer(context, CL_MEM_READ_WRITE, bufParticle_GL, &status);
 	checkErrorCode("Creating bufParticle...\t", status);
 
+	bufTest_CL = clCreateBuffer(context, CL_MEM_READ_WRITE, 5*sizeof(cl_float4), NULL, &status);
+	checkErrorCode("Creating bufTest_CL...\t", status);
+
 	// Associate the input and output buffers & variables with the kernel
-	status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &bufParticle_CL); checkErrorCode("Setting KernelArg(0)...\t", status);
-	status = clSetKernelArg(kernel, 1, sizeof(cl_float), &AR); checkErrorCode("Setting KernelArg(1)...\t", status);
+	status = clSetKernelArg(updateKernel, 0, sizeof(cl_mem), &bufParticle_CL); checkErrorCode("Setting KernelArg(0)...\t", status);
+	status = clSetKernelArg(updateKernel, 1, sizeof(cl_float), &AR); checkErrorCode("Setting KernelArg(1)...\t", status);
+	status = clSetKernelArg(updateKernel, 2, sizeof(cl_mem), &bufTest_CL); checkErrorCode("Setting KernelArg(2)...\t", status);
 
 	// Wait until command queue events are completed
 	clFinish(cmdQueue);
@@ -85,8 +116,8 @@ void compileKernel(){
 	if(buildLogSize > 2) printf("%s\n",buildLog);
 	free(buildLog);
 
-	// Create the vector addition kernel
-	kernel = clCreateKernel(programCL, "updateParticle", &status);
+	// Create the vector update kernel
+	updateKernel = clCreateKernel(programCL, "updateParticle", &status);
 	checkErrorCode("Creating kernel...\t", status);
 }
 
