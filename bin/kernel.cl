@@ -1,16 +1,16 @@
-#ifdef cl_khr_fp64
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#elif defined(cl_amd_fp64)
-#pragma OPENCL EXTENSION cl_amd_fp64 : enable
-#else
-#endif
+//#ifdef cl_khr_fp64
+//#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+//#elif defined(cl_amd_fp64)
+//#pragma OPENCL EXTENSION cl_amd_fp64 : enable
+//#else
+//#endif
 
-#ifdef cl_khr_gl_sharing
-#pragma OPENCL EXTENSION cl_khr_gl_sharing : enable
-#elif defined(cl_amd_gl_sharing)
-#pragma OPENCL EXTENSION cl_amd_gl_sharing : enable
-#else
-#endif
+//#ifdef cl_khr_gl_sharing
+//#pragma OPENCL EXTENSION cl_khr_gl_sharing : enable
+//#elif defined(cl_amd_gl_sharing)
+//#pragma OPENCL EXTENSION cl_amd_gl_sharing : enable
+//#else
+//#endif
 
 typedef struct{
 	uint alive;
