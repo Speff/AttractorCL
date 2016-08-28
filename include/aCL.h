@@ -3,6 +3,7 @@
 #else
 #endif
 
+
 void initCL();
 void killCL();
 void runSim();

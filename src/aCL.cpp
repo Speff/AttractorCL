@@ -1,5 +1,6 @@
 #include "aCL.h"
 
+
 // OpenCL Vars
 cl_uint numDevices;
 cl_device_id *devices;
@@ -153,7 +154,9 @@ void boilerplateCode(){
 		CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(), // WGL HDC
 		CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[0], // OpenCL platform
 		0
-	};	
+	};
+
+	//printf("Context: %s\nHDC: %i\n", (char*)wglGetCurrentContext(), (int)wglGetCurrentDC());
 
 	// Create a contect and associate it with the devices
 	context = clCreateContext(properties, numDevices, devices, NULL, NULL, &status);

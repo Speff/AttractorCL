@@ -28,11 +28,11 @@ __kernel void updateParticle(__global Particle* particleArray,
 	
 	int gid = get_global_id(0); 
 
-	if(particleArray[gid].alive == 1){
-		particleArray[gid].position += particleArray[gid].velocity;
-		particleArray[gid].velocity = particleArray[gid].velocity * particleArray[gid].velocityDamping;
-		particleArray[gid].color = particleArray[gid].color * particleArray[gid].lifetime;
-		particleArray[gid].lifetime -= particleArray[gid].decayPerIteration;
-		if(particleArray[gid].lifetime < 0) particleArray[gid].alive = 0;
-	}
+	//if( == 1){
+		//particleArray[gid].position += particleArray[gid].velocity * particleArray[gid].alive;
+		//particleArray[gid].velocity = particleArray[gid].velocity * particleArray[gid].velocityDamping * particleArray[gid].alive;
+		//particleArray[gid].color = particleArray[gid].color * particleArray[gid].lifetime * particleArray[gid].alive;
+		particleArray[gid].lifetime -= particleArray[gid].decayPerIteration * particleArray[gid].alive;
+		//if(particleArray[gid].lifetime < 0) particleArray[gid].alive = 0;
+	//}
 }
