@@ -11,8 +11,8 @@ extern GLuint bufParticle_GL;
 // Responsible for initializing GLFW, OpenGL, OpenCL and running the main loop
 int main(int argc, char **argv){
 	GLFWwindow* window;
-	double time = glfwGetTime();
-	double loopStart;
+	//double time = glfwGetTime();
+	//double loopStart;
 
 	// GLFW Initialization ----------------------------------------------------------------------
 	// Set GLFW Error Callback Function
@@ -63,7 +63,7 @@ int main(int argc, char **argv){
 
 	// Run main loop, checking the glfwWindowShouldClose flag for termination
 	while (!glfwWindowShouldClose(window)){
-		loopStart = glfwGetTime();
+		//loopStart = glfwGetTime();
 		glfwPollEvents();
 
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);

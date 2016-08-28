@@ -10,5 +10,5 @@ void runSim();
 void boilerplateCode();
 void compileKernel();
 void setMemMappings();
-void checkErrorCode(char*, int);
+void checkErrorCode(char const*, int);
 void readBuffer();
