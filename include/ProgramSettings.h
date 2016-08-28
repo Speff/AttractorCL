@@ -1,7 +1,7 @@
 #define		PSETTINGS		TRUE
 #define		WIDTH			400
 #define		HEIGHT			300
-#define		PATH			"C:/Users/Sahil/Documents/GitHub/AttractorCL/"
+//#define		PATH			"C:/Users/Sahil/Documents/GitHub/AttractorCL/"
 #define		VERBOSE			true
 #define		NUM_PARTICLES	64
 

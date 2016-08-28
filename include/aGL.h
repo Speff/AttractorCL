@@ -9,6 +9,6 @@
 
 void initGL();
 void killGL();
-bool compileShader(GLuint*, GLchar*, GLenum, GLchar*);
+bool compileShader(GLuint*, GLchar*, GLenum, GLchar const*);
 void makeProgram();
 void createVBOs();

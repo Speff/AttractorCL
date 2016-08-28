@@ -1148,7 +1148,7 @@ static int Load_Version_3_3()
 typedef int (*PFN_LOADFUNCPOINTERS)();
 typedef struct ogl_StrToExtMap_s
 {
-	char *extensionName;
+	char const *extensionName;
 	int *extensionVariable;
 	PFN_LOADFUNCPOINTERS LoadExtension;
 } ogl_StrToExtMap;

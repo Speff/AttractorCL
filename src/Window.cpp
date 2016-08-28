@@ -36,6 +36,8 @@ int main(int argc, char **argv){
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 
+	printf("wglGetCurrentDC(): %u\nGLFW DC: %u\n", (unsigned int)wglGetCurrentDC(), (unsigned int)GetDC(GetForegroundWindow()));
+
 	// Load OpenGL3.3 Extensions (MUST BE AFTER CONTEXT CREATION)
 	if(ogl_LoadFunctions() == ogl_LOAD_FAILED){
 		glfwDestroyWindow(window);
@@ -124,15 +126,15 @@ void resize(GLFWwindow* window, int width, int height){
 
 char* readFile(const char* fileName){
 	FILE *fp;
-	char *fileLocation;
+	//char *fileLocation;
 	size_t sourceSize;
 	char* output;
 
-	fileLocation = (char*)malloc(strlen(PATH) + strlen(fileName));
-	strcpy(fileLocation, PATH);
-	strcat(fileLocation, fileName);
+	//fileLocation = (char*)malloc(strlen(fileName));
+	//strcpy(fileLocation, PATH);
+	//strcat(fileLocation, fileName);
 
-	fp = fopen(fileLocation, "r");
+	fp = fopen(fileName, "r");
 	if(!fp){
 		printf("Can't read %s\n", fileName);
 	}

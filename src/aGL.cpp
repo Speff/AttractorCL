@@ -83,7 +83,7 @@ void makeProgram(){
 	delete[] fragShaderSource;
 }
 
-bool compileShader(GLuint* shaderHandle, GLchar* shaderSource, GLenum shaderType, GLchar* shaderName){
+bool compileShader(GLuint* shaderHandle, GLchar* shaderSource, GLenum shaderType, GLchar const* shaderName){
 	GLint compilationResult = 0;
 
 	*shaderHandle = glCreateShader(shaderType);
