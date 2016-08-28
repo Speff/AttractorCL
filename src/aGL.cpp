@@ -21,19 +21,19 @@ void createVBOs(){
 	Particle* particleArray= (Particle*)malloc(NUM_PARTICLES*sizeof(Particle));
 
 	cl_float4 initialFloat4p = {0.0f, 0.5f, 0.0f, 1.0f};
-	cl_float4 initialFloat4v = {0.0f, -0.001f, 0.0f, 0.0f};
-	cl_float4 initialFloat4c = {1.0f, 0.0f, 1.0f, 1.0f};
+	cl_float4 initialFloat4v = {0.0f, 0.0f, 0.0f, 0.0f};
+	cl_float4 initialFloat4c = {0.0f, 0.0f, 0.0f, 0.0f};
 	cl_float particleSpacing = 1/(cl_float)NUM_PARTICLES;
 
 	for(int i = 0; i < NUM_PARTICLES; i++){
 		particleArray[i].alive = (cl_uint)1;
 		particleArray[i].position = initialFloat4p;
-		particleArray[i].position.s[0] = i*particleSpacing-.5;
+		particleArray[i].position.s[0] += i*particleSpacing-.5;
 		particleArray[i].velocity = initialFloat4v;
 		particleArray[i].velocityDamping = (cl_float)1.0f;
 		particleArray[i].color = initialFloat4c;
 		particleArray[i].lifetime = (cl_float)1.0f;
-		particleArray[i].decayPerIteration = (cl_float)0.00001f;
+		particleArray[i].decayPerIteration = (cl_float)0.0f;
 	}
 
 	glGenBuffers(1, &bufParticle_GL);

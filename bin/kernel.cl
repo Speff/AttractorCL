@@ -23,16 +23,23 @@ typedef struct{
 } Particle;  
 
 __kernel void updateParticle(__global Particle* particleArray, 
-							 const float AR,
-							 __global float4* Test){
+				const float AR,
+				const float4 WINDOW_LIMIT_LOWER,
+				const float4 WINDOW_LIMIT_UPPER,
+				__global float4* Test){
 	
-	int gid = get_global_id(0); 
+	const float2 AR_MATRIX = (float2)(AR, 1.0f);	
+	int gid = get_global_id(0);
 
-	//if( == 1){
-		//particleArray[gid].position += particleArray[gid].velocity * particleArray[gid].alive;
-		//particleArray[gid].velocity = particleArray[gid].velocity * particleArray[gid].velocityDamping * particleArray[gid].alive;
-		//particleArray[gid].color = particleArray[gid].color * particleArray[gid].lifetime * particleArray[gid].alive;
-		particleArray[gid].lifetime -= particleArray[gid].decayPerIteration * particleArray[gid].alive;
-		//if(particleArray[gid].lifetime < 0) particleArray[gid].alive = 0;
-	//}
+	particleArray[gid].position.x *= AR_MATRIX.x;
+	particleArray[gid].position.y *= AR_MATRIX.y;
+
+	Test[gid] = particleArray[gid].position;
+
+        //particleArray[gid].position.x = sin(particleArray[gid].position.y) + cos(particleArray[gid].position.x);
+        //particleArray[gid].position.y = sin(particleArray[gid].position.x) + cos(particleArray[gid].position.y);
+	//particleArray[gid].position.z -= .01;
+
+	particleArray[gid].position.x /= AR_MATRIX.x;
+	particleArray[gid].position.y /= AR_MATRIX.y;
 }

@@ -11,8 +11,6 @@ cl_kernel updateKernel;
 cl_mem bufParticle_CL;
 cl_mem bufTest_CL;
 
-cl_float4 testVar[5];
-
 extern GLuint bufParticle_GL;
 
 void initCL(){
@@ -32,13 +30,15 @@ void killCL(){
 
 void readBuffer(){
 	cl_int status;
+	cl_uint nTestVar = 1;
+	cl_float4 testVar[nTestVar];
 
 	// Read the device output buffer to the host output array
-	status = clEnqueueReadBuffer(cmdQueue, bufTest_CL, CL_TRUE, 0, 5 * sizeof(cl_float4), testVar, 0, NULL, NULL);
+	status = clEnqueueReadBuffer(cmdQueue, bufTest_CL, CL_TRUE, 0, nTestVar * sizeof(testVar), testVar, 0, NULL, NULL);
 	printf("------------------------\n");
 	printf("%2.3f, %2.3f, %2.3f, %2.3f, read\n", testVar[0].s[0], testVar[0].s[1], testVar[0].s[2], testVar[0].s[3]);
-	printf("%2.3f, %2.3f, %2.3f, %2.3f, read\n", testVar[1].s[0], testVar[1].s[1], testVar[1].s[2], testVar[1].s[3]);
-	printf("%2.3f, %2.3f, %2.3f, %2.3f, read\n", testVar[2].s[0], testVar[2].s[1], testVar[2].s[2], testVar[2].s[3]);
+	//printf("%2.3f, %2.3f, %2.3f, %2.3f, read\n", testVar[1].s[0], testVar[1].s[1], testVar[1].s[2], testVar[1].s[3]);
+	//printf("%2.3f, %2.3f, %2.3f, %2.3f, read\n", testVar[2].s[0], testVar[2].s[1], testVar[2].s[2], testVar[2].s[3]);
 	printf("------------------------\n");
 	checkErrorCode("Reading bufTestVal...\t", status);
 	clFinish(cmdQueue);
@@ -67,7 +67,7 @@ void runSim(){
 	clEnqueueNDRangeKernel(cmdQueue, updateKernel, 1, NULL, globalWorkSize, NULL, 0, NULL, NULL);
 	//checkErrorCode("Running Sim...\t\t", status);
 	clFinish(cmdQueue);
-	//readBuffer();
+	readBuffer();
 
 	clEnqueueReleaseGLObjects(cmdQueue, 1, &bufParticle_CL, 0, NULL, NULL);
 }
@@ -75,6 +75,8 @@ void runSim(){
 void setMemMappings(){
 	cl_int status;	// Used to check for errors
 	cl_float AR = WIDTH / (float) HEIGHT;
+	cl_float4 windowLimitLower = {-1.0f, -1.0f, -1.0f, -1.0f};
+	cl_float4 windowLimitUpper = {1.0f, 1.0f, 1.0f, 1.0f};
 
 	printf("Creating CL Memory Buffers\n");
 
@@ -89,7 +91,9 @@ void setMemMappings(){
 	// Associate the input and output buffers & variables with the kernel
 	status = clSetKernelArg(updateKernel, 0, sizeof(cl_mem), &bufParticle_CL); checkErrorCode("Setting KernelArg(0)...\t", status);
 	status = clSetKernelArg(updateKernel, 1, sizeof(cl_float), &AR); checkErrorCode("Setting KernelArg(1)...\t", status);
-	status = clSetKernelArg(updateKernel, 2, sizeof(cl_mem), &bufTest_CL); checkErrorCode("Setting KernelArg(2)...\t", status);
+	status = clSetKernelArg(updateKernel, 2, sizeof(cl_float4), &windowLimitLower); checkErrorCode("Setting KernelArg(2)...\t", status);
+	status = clSetKernelArg(updateKernel, 3, sizeof(cl_float4), &windowLimitUpper); checkErrorCode("Setting KernelArg(3)...\t", status);
+	status = clSetKernelArg(updateKernel, 4, sizeof(cl_mem), &bufTest_CL); checkErrorCode("Setting KernelArg(4)...\t", status);
 
 	// Wait until command queue events are completed
 	clFinish(cmdQueue);
@@ -146,42 +150,8 @@ void boilerplateCode(){
 	status = clGetPlatformIDs(numPlatforms, platforms, NULL);
 	checkErrorCode("Filling platforms...\t", status);
 
-    for(platformNumber = 0; platformNumber < numPlatforms; platformNumber++){
-        clGetGLContextInfoKHR_fn clGetGLContextInfoKHR = (clGetGLContextInfoKHR_fn)clGetExtensionFunctionAddressForPlatform(platforms[platformNumber], "clGetGLContextInfoKHR");
-
-        cl_context_properties properties[] = {
-            CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(), // WGL Context  
-            CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(), // WGL HDC
-            CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[platformNumber], // OpenCL platform
-            0
-        };	
-        status = clGetGLContextInfoKHR(properties, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(device), &device, NULL);
-        checkErrorCode("Finding OpenGL dev", status);
-        if(status == CL_SUCCESS){
-            // Create a contect and associate it with the devices
-            context = clCreateContext(properties, 1, &device, NULL, NULL, &status);
-            //context = clCreateContextFromType(properties, CL_DEVICE_TYPE_GPU, &pfn_notify, NULL, &status);
-            checkErrorCode("Creating context...\t", status);
-            break;
-        }
-    } 
-
-    
-
-    /*
 	for(platformNumber = 0; platformNumber < numPlatforms; platformNumber++){
-		// Retrieve the number of devices
-		status = clGetDeviceIDs(platforms[platformNumber], CL_DEVICE_TYPE_GPU, 0, NULL, &numDevices);
-
-		// Allocate space for each device
-		devices = (cl_device_id*)malloc(numDevices * sizeof(cl_device_id));
-
-		// Fill in the devices
-		status = clGetDeviceIDs(platforms[platformNumber], CL_DEVICE_TYPE_GPU, numDevices, devices, NULL);
-		checkErrorCode("Filling devices...\t", status);
-		
-		printf("wglGetCurrentDC(): %u\nGLFW DC: %u\n", (unsigned int)wglGetCurrentDC(), (unsigned int)GetDC(GetForegroundWindow()));
-
+		clGetGLContextInfoKHR_fn clGetGLContextInfoKHR = (clGetGLContextInfoKHR_fn)clGetExtensionFunctionAddressForPlatform(platforms[platformNumber], "clGetGLContextInfoKHR");
 
 		cl_context_properties properties[] = {
 			CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(), // WGL Context  
@@ -189,49 +159,83 @@ void boilerplateCode(){
 			CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[platformNumber], // OpenCL platform
 			0
 		};	
-		status = clGetGLContextInfoKHR(properties, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(devices), devices, NULL);
-		checkErrorCode("Check if oklidfujhg;isudfhgil:", status);
-
-		// Create a contect and associate it with the devices
-		//context = clCreateContext(properties, numDevices, devices, NULL, NULL, &status);
-		context = clCreateContextFromType(properties, CL_DEVICE_TYPE_GPU, &pfn_notify, NULL, &status);
-		checkErrorCode("Creating context...\t", status);
+		status = clGetGLContextInfoKHR(properties, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(device), &device, NULL);
+		checkErrorCode("Finding OpenGL dev", status);
 		if(status == CL_SUCCESS){
-			//printf("Found good context\n");
+			// Create a contect and associate it with the devices
+			context = clCreateContext(properties, 1, &device, NULL, NULL, &status);
+			//context = clCreateContextFromType(properties, CL_DEVICE_TYPE_GPU, &pfn_notify, NULL, &status);
+			checkErrorCode("Creating context...\t", status);
 			break;
 		}
-		else{
-			//printf("Platform does not have OpenGL context running. Trying next...\n");
-		}
+	} 
+
+
+
+	/*
+	   for(platformNumber = 0; platformNumber < numPlatforms; platformNumber++){
+// Retrieve the number of devices
+status = clGetDeviceIDs(platforms[platformNumber], CL_DEVICE_TYPE_GPU, 0, NULL, &numDevices);
+
+// Allocate space for each device
+devices = (cl_device_id*)malloc(numDevices * sizeof(cl_device_id));
+
+// Fill in the devices
+status = clGetDeviceIDs(platforms[platformNumber], CL_DEVICE_TYPE_GPU, numDevices, devices, NULL);
+checkErrorCode("Filling devices...\t", status);
+
+printf("wglGetCurrentDC(): %u\nGLFW DC: %u\n", (unsigned int)wglGetCurrentDC(), (unsigned int)GetDC(GetForegroundWindow()));
+
+
+cl_context_properties properties[] = {
+CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(), // WGL Context  
+CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(), // WGL HDC
+CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[platformNumber], // OpenCL platform
+0
+};	
+status = clGetGLContextInfoKHR(properties, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(devices), devices, NULL);
+checkErrorCode("Check if oklidfujhg;isudfhgil:", status);
+
+// Create a contect and associate it with the devices
+//context = clCreateContext(properties, numDevices, devices, NULL, NULL, &status);
+context = clCreateContextFromType(properties, CL_DEVICE_TYPE_GPU, &pfn_notify, NULL, &status);
+checkErrorCode("Creating context...\t", status);
+if(status == CL_SUCCESS){
+//printf("Found good context\n");
+break;
+}
+else{
+	//printf("Platform does not have OpenGL context running. Trying next...\n");
+	}
 	}
 
 	for(deviceNumber = 0; deviceNumber < numDevices; deviceNumber++){
-		// Create a command queue and associate it with the device
-		cmdQueue = clCreateCommandQueue(context, devices[deviceNumber], 0, &status);
-		checkErrorCode("Creating cmd queue...\t", status);
-		if(status == CL_SUCCESS){
-			//printf("Found good device\n");
-			break;
-		}
-		else{
-			//printf("Device does not have OpenGL context running. Trying next...\n");
-		}
+// Create a command queue and associate it with the device
+cmdQueue = clCreateCommandQueue(context, devices[deviceNumber], 0, &status);
+checkErrorCode("Creating cmd queue...\t", status);
+if(status == CL_SUCCESS){
+//printf("Found good device\n");
+break;
+}
+else{
+	//printf("Device does not have OpenGL context running. Trying next...\n");
 	}
-    */
+	}
+	*/
 
-    cmdQueue = clCreateCommandQueue(context, device, 0, &status);
-    checkErrorCode("Creating cmd queue...\t", status);
-    
+cmdQueue = clCreateCommandQueue(context, device, 0, &status);
+checkErrorCode("Creating cmd queue...\t", status);
 
-	char* devName;
-	size_t nameSize;
-	clGetDeviceInfo(device, CL_DEVICE_NAME, 0, NULL, &nameSize);
-	devName = (char*)malloc(nameSize);
-	clGetDeviceInfo(device, CL_DEVICE_NAME, nameSize, devName, NULL);
-	if(status == CL_SUCCESS && VERBOSE) printf("Using device:\t\t%s\n", devName); 
 
-	free(platforms);
-	free(devName);
+char* devName;
+size_t nameSize;
+clGetDeviceInfo(device, CL_DEVICE_NAME, 0, NULL, &nameSize);
+devName = (char*)malloc(nameSize);
+clGetDeviceInfo(device, CL_DEVICE_NAME, nameSize, devName, NULL);
+if(status == CL_SUCCESS && VERBOSE) printf("Using device:\t\t%s\n", devName); 
+
+free(platforms);
+free(devName);
 }
 
 void pfn_notify(const char *errinfo, const void *private_info, size_t cb, void *user_data){
