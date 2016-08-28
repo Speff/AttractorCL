@@ -2,8 +2,8 @@
 
 
 // OpenCL Vars
-cl_uint numDevices;
-cl_device_id *devices;
+cl_device_id device;
+//cl_uint numDevices;
 cl_program programCL;
 cl_context context;
 cl_command_queue cmdQueue;
@@ -27,7 +27,7 @@ void killCL(){
 	clReleaseProgram(programCL);
 	clReleaseCommandQueue(cmdQueue);
 	clReleaseContext(context);
-	free(devices);
+	//free(devices);
 }
 
 void readBuffer(){
@@ -108,14 +108,15 @@ void compileKernel(){
 	checkErrorCode("Creating program...\t", status);
 
 	// Compile the program
-	status = clBuildProgram(programCL, numDevices, devices, NULL, NULL, NULL);
+	//status = clBuildProgram(programCL, numDevices, devices, NULL, NULL, NULL);
+	status = clBuildProgram(programCL, 1, &device, NULL, NULL, NULL);
 	checkErrorCode("Compiling program...\t", status);
 
 	char* buildLog;
 	size_t buildLogSize;
-	clGetProgramBuildInfo(programCL,*devices,CL_PROGRAM_BUILD_LOG, 0, NULL, &buildLogSize);
+	clGetProgramBuildInfo(programCL,device,CL_PROGRAM_BUILD_LOG, 0, NULL, &buildLogSize);
 	buildLog = (char*)malloc(buildLogSize);
-	clGetProgramBuildInfo(programCL,*devices,CL_PROGRAM_BUILD_LOG, buildLogSize, buildLog, NULL);
+	clGetProgramBuildInfo(programCL,device,CL_PROGRAM_BUILD_LOG, buildLogSize, buildLog, NULL);
 	if(buildLogSize > 2) printf("%s\n",buildLog);
 	free(buildLog);
 
@@ -130,7 +131,7 @@ void boilerplateCode(){
 
 	// Selected platforms & device
 	cl_uint platformNumber;
-	cl_uint deviceNumber;
+	//cl_uint deviceNumber;
 
 	// Retrieve the number of platforms
 	cl_uint numPlatforms = 0;
@@ -145,6 +146,29 @@ void boilerplateCode(){
 	status = clGetPlatformIDs(numPlatforms, platforms, NULL);
 	checkErrorCode("Filling platforms...\t", status);
 
+    for(platformNumber = 0; platformNumber < numPlatforms; platformNumber++){
+        clGetGLContextInfoKHR_fn clGetGLContextInfoKHR = (clGetGLContextInfoKHR_fn)clGetExtensionFunctionAddressForPlatform(platforms[platformNumber], "clGetGLContextInfoKHR");
+
+        cl_context_properties properties[] = {
+            CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(), // WGL Context  
+            CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(), // WGL HDC
+            CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[platformNumber], // OpenCL platform
+            0
+        };	
+        status = clGetGLContextInfoKHR(properties, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(device), &device, NULL);
+        checkErrorCode("Finding OpenGL dev", status);
+        if(status == CL_SUCCESS){
+            // Create a contect and associate it with the devices
+            context = clCreateContext(properties, 1, &device, NULL, NULL, &status);
+            //context = clCreateContextFromType(properties, CL_DEVICE_TYPE_GPU, &pfn_notify, NULL, &status);
+            checkErrorCode("Creating context...\t", status);
+            break;
+        }
+    } 
+
+    
+
+    /*
 	for(platformNumber = 0; platformNumber < numPlatforms; platformNumber++){
 		// Retrieve the number of devices
 		status = clGetDeviceIDs(platforms[platformNumber], CL_DEVICE_TYPE_GPU, 0, NULL, &numDevices);
@@ -164,10 +188,6 @@ void boilerplateCode(){
 			CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(), // WGL HDC
 			CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[platformNumber], // OpenCL platform
 			0
-			/*CL_GL_CONTEXT_KHR, (cl_context_properties)GetForegroundWindow(), // WGL Context  
-			CL_WGL_HDC_KHR, (cl_context_properties)GetDC(GetForegroundWindow()), // WGL HDC
-			CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[platformNumber], // OpenCL platform
-			0*/
 		};	
 		status = clGetGLContextInfoKHR(properties, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(devices), devices, NULL);
 		checkErrorCode("Check if oklidfujhg;isudfhgil:", status);
@@ -197,12 +217,17 @@ void boilerplateCode(){
 			//printf("Device does not have OpenGL context running. Trying next...\n");
 		}
 	}
+    */
+
+    cmdQueue = clCreateCommandQueue(context, device, 0, &status);
+    checkErrorCode("Creating cmd queue...\t", status);
+    
 
 	char* devName;
 	size_t nameSize;
-	clGetDeviceInfo(devices[deviceNumber], CL_DEVICE_NAME, 0, NULL, &nameSize);
+	clGetDeviceInfo(device, CL_DEVICE_NAME, 0, NULL, &nameSize);
 	devName = (char*)malloc(nameSize);
-	clGetDeviceInfo(devices[deviceNumber], CL_DEVICE_NAME, nameSize, devName, NULL);
+	clGetDeviceInfo(device, CL_DEVICE_NAME, nameSize, devName, NULL);
 	if(status == CL_SUCCESS && VERBOSE) printf("Using device:\t\t%s\n", devName); 
 
 	free(platforms);
