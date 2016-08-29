@@ -31,10 +31,11 @@ __kernel void updateParticle(__global Particle* particleArray,
 	const float2 AR_MATRIX = (float2)(AR, 1.0f);	
 	int gid = get_global_id(0);
 
+	Test[gid] = particleArray[gid].position;
+
 	particleArray[gid].position.x *= AR_MATRIX.x;
 	particleArray[gid].position.y *= AR_MATRIX.y;
 
-	Test[gid] = particleArray[gid].position;
 
         //particleArray[gid].position.x = sin(particleArray[gid].position.y) + cos(particleArray[gid].position.x);
         //particleArray[gid].position.y = sin(particleArray[gid].position.x) + cos(particleArray[gid].position.y);

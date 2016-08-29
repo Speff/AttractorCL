@@ -67,7 +67,7 @@ void runSim(){
     clEnqueueNDRangeKernel(cmdQueue, updateKernel, 1, NULL, globalWorkSize, NULL, 0, NULL, NULL);
     //checkErrorCode("Running Sim...\t\t", status);
     clFinish(cmdQueue);
-    readBuffer();
+    //readBuffer();
 
     clEnqueueReleaseGLObjects(cmdQueue, 1, &bufParticle_CL, 0, NULL, NULL);
 }

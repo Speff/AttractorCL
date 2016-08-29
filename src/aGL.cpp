@@ -22,7 +22,7 @@ void createVBOs(){
 
 	cl_float4 initialFloat4p = {0.0f, 0.5f, 0.0f, 1.0f};
 	cl_float4 initialFloat4v = {0.0f, 0.0f, 0.0f, 0.0f};
-	cl_float4 initialFloat4c = {0.0f, 0.0f, 0.0f, 0.0f};
+	cl_float4 initialFloat4c = {0.1f, 0.4f, 0.8f, 1.0f};
 	cl_float particleSpacing = 1/(cl_float)NUM_PARTICLES;
 
 	for(int i = 0; i < NUM_PARTICLES; i++){
@@ -34,6 +34,7 @@ void createVBOs(){
 		particleArray[i].color = initialFloat4c;
 		particleArray[i].lifetime = (cl_float)1.0f;
 		particleArray[i].decayPerIteration = (cl_float)0.0f;
+        printf("%2.3f, %2.3f, %2.3f, %2.3f, read\n", particleArray[i].position.s[0], particleArray[i].position.s[1], particleArray[i].position.s[2], particleArray[i].position.s[3]);
 	}
 
 	glGenBuffers(1, &bufParticle_GL);

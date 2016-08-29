@@ -63,6 +63,11 @@ int main(int argc, char **argv){
 
 	glUseProgram(0);
 
+    runSim();
+    readBuffer();
+    runSim();
+    readBuffer();
+
 	// Run main loop, checking the glfwWindowShouldClose flag for termination
 	while (!glfwWindowShouldClose(window)){
 		loopStart = glfwGetTime();
